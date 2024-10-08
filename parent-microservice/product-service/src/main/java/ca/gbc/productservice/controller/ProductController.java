@@ -7,6 +7,7 @@ import ca.gbc.productservice.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,9 +21,17 @@ public class ProductController {
 
     @PostMapping //post like in c#
     @ResponseStatus(HttpStatus.CREATED)
-    public void createProduct(@RequestBody ProductRequest productRequest){
-        productService.createProduct(productRequest);
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest){
 
+        ProductResponse createProduct = productService.createProduct(productRequest);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "/api/product/" + createProduct.id());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(createProduct);
     }
 
     @GetMapping
@@ -32,7 +41,7 @@ public class ProductController {
     }
 
     //http://localhost:8080/api/product/fefdnvkjsbvdcjkvbdv
-    @PutMapping
+    @PutMapping("/{productId}")
     //@ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> updateProduct(@PathVariable("productId") String productId,
                                            @RequestBody ProductRequest productRequest){
@@ -46,7 +55,7 @@ public class ProductController {
         return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable("productId") String productId){
 
         productService.deleteProduct(productId);
